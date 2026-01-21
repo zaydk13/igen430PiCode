@@ -25,7 +25,7 @@ def turntable_step(steps, delay=0.01):
         [0, 0, 0, 1],
     ]
 
-    turntable_step(200, 0.02)  # Rotate 200 steps with 0.02s delay between steps
+    turntable_step(200)
 
     step_count = len(step_sequence)
     step_dir = 1 if steps > 0 else -1
