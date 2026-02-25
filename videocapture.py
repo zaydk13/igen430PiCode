@@ -5,6 +5,8 @@ from picamera2 import Picamera2
 from libcamera import controls
 import RPi.GPIO as gpio
 import threading
+import cv2
+import os
 
 # GPIO setup
 gpio.setmode(gpio.BCM)
@@ -59,10 +61,13 @@ camera.resolution = (1024, 768)
 
 camera.start(show_preview=True)
 camera.set_controls({"AfMode": controls.AfModeEnum.Continuous})
+success = camera.autofocus_cycle()
+job = camera.autofocus_cycle(wait=False)
 
 now = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
 # Start video recording
+success = camera.wait(job)
 camera.start_and_record_video(f"testvideo{now}.mp4", duration=30)
 
 # Start motor rotation in a separate thread
@@ -77,3 +82,21 @@ camera.close()
 
 # Clean up GPIO pins
 gpio.cleanup()
+
+# Extract 50 frames from the video
+video_path = f"testvideo{now}.mp4"
+cap = cv2.VideoCapture(video_path)
+total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+if not os.path.exists('image_send'):
+    os.makedirs('image_send')
+
+for i in range(50):
+    frame_num = int(i * total_frames / 50)
+    cap.set(cv2.CAP_PROP_POS_FRAMES, frame_num)
+    ret, frame = cap.read()
+    if ret:
+        cv2.imwrite(f'image_send/frame_{i:02d}.jpg', frame)
+
+cap.release()
+print("Frame extraction complete!")
