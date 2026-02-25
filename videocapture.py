@@ -7,6 +7,11 @@ import RPi.GPIO as gpio
 import threading
 import cv2
 import os
+import shutil
+
+# Clear image_send folder
+if os.path.exists('image_send'):
+    shutil.rmtree('image_send')
 
 # GPIO setup
 gpio.setmode(gpio.BCM)
