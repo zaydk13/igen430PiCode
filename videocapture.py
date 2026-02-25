@@ -64,7 +64,7 @@ camera.set_controls({"AfMode": controls.AfModeEnum.Continuous})
 success = camera.autofocus_cycle()
 job = camera.autofocus_cycle(wait=False)
 
-now = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+now = datetime.datetime.now().strftime("%Y/%m/%d_%H-%M")
 
 # Start video recording
 success = camera.wait(job)
