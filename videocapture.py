@@ -11,7 +11,7 @@ import shutil
 
 # Clear image_send folder
 if os.path.exists('image_send'):
-    shutil.rmtree('image_send')
+    os.remove('image_send')
 
 # GPIO setup
 gpio.setmode(gpio.BCM)
@@ -71,13 +71,13 @@ job = camera.autofocus_cycle(wait=False)
 
 now = datetime.datetime.now().strftime("%Y-%m-%d_%Hh%Mm")
 
-# Start video recording
-success = camera.wait(job)
-camera.start_and_record_video(f"testvideo{now}.mp4", duration=30)
-
 # Start motor rotation in a separate thread
 motor_thread = threading.Thread(target=turn_stepper_motor)
 motor_thread.start()
+
+# Start video recording
+success = camera.wait(job)
+camera.start_and_record_video(f"testvideo{now}.mp4", duration=30)
 
 # Wait for motor to finish
 motor_thread.join()
