@@ -17,24 +17,14 @@ for pin in control_pins:
     gpio.setup(pin, gpio.OUT)
     gpio.output(pin, 0)
 
-def turn_stepper_motor(steps=200, delay=0.01):
-    """
-    Turn a stepper motor one full rotation.
+def turn_stepper_motor(steps=2048*3, delay=0.005):
     
-    Args:
-        steps: Number of steps (default 200 for one full turn with half-step sequence)
-        delay: Time delay between steps in seconds (default 0.01)
-    """
-    # Half-step sequence for bipolar stepper motor
+    # Full-step sequence for bipolar stepper motor
     step_sequence = [
-        [1, 0, 0, 1],  # Step 0
-        [1, 0, 0, 0],  # Step 1
-        [1, 1, 0, 0],  # Step 2
-        [0, 1, 0, 0],  # Step 3
-        [0, 1, 1, 0],  # Step 4
-        [0, 0, 1, 0],  # Step 5
-        [0, 0, 1, 1],  # Step 6
-        [0, 0, 0, 1],  # Step 7
+        [1, 0, 1, 0],  # Step 0
+        [0, 1, 1, 0],  # Step 1
+        [0, 1, 0, 1],  # Step 2
+        [1, 0, 0, 1],  # Step 3
     ]
     
     step_count = len(step_sequence)
@@ -61,7 +51,7 @@ def turn_stepper_motor(steps=200, delay=0.01):
 
 try:
     # Execute one full turn
-    turn_stepper_motor(steps=200, delay=0.01)
+    turn_stepper_motor()
     
 finally:
     # Clean up GPIO pins
