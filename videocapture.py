@@ -38,7 +38,7 @@ for pin in control_pins:
     gpio.setup(pin, gpio.OUT)
     gpio.output(pin, 0)
 
-def turn_stepper_motor(steps=2048*3, delay=0.005):
+def turn_stepper_motor(steps=2048*4, delay=0.005):
     
     # Full-step sequence for bipolar stepper motor
     step_sequence = [
@@ -97,7 +97,7 @@ camera.close()
 # Clean up GPIO pins
 gpio.cleanup()
 
-# Extract 50 frames from the video
+# Extract frames from the video
 video_path = f"testvideo{now}.mp4"
 cap = cv2.VideoCapture(video_path)
 total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -107,8 +107,8 @@ if not os.path.exists('image_send'):
 
 empty_folder('image_send')
 
-for i in range(50):
-    frame_num = int(i * total_frames / 50)
+for i in range(30):
+    frame_num = int(i * total_frames / 30)
     cap.set(cv2.CAP_PROP_POS_FRAMES, frame_num)
     ret, frame = cap.read()
     if ret:
