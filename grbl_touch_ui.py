@@ -43,6 +43,7 @@ BTN_PRESSED = "#B8B8B8"
 # ---------------------------
 LIGHT_ON_CMD = "M8"      # coolant on = light on
 LIGHT_OFF_CMD = "M9"     # coolant off = light off
+SPINDLE_ON_CMD = "M3"
 SPINDLE_OFF_CMD = "M5"
 DEFAULT_SPINDLE_SPEED = "12000"
 

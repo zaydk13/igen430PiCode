@@ -107,8 +107,8 @@ if not os.path.exists('image_send'):
 
 empty_folder('image_send')
 
-for i in range(30):
-    frame_num = int(i * total_frames / 30)
+for i in range(50):
+    frame_num = int(i * total_frames / 50)
     cap.set(cv2.CAP_PROP_POS_FRAMES, frame_num)
     ret, frame = cap.read()
     if ret:
