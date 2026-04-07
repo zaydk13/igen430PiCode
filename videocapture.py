@@ -38,6 +38,10 @@ for pin in control_pins:
     gpio.setup(pin, gpio.OUT)
     gpio.output(pin, 0)
 
+# Define GPIO pin for trigger input
+trigger_pin = 18
+gpio.setup(trigger_pin, gpio.IN, pull_up_down=gpio.PUD_DOWN)
+
 def turn_stepper_motor(steps=2048*4, delay=0.005):
     
     # Full-step sequence for bipolar stepper motor
@@ -80,6 +84,17 @@ job = camera.autofocus_cycle(wait=False)
 
 now = datetime.datetime.now().strftime("%Y-%m-%d_%Hh%Mm")
 
+if not os.path.exists('image_send'):
+    os.makedirs('image_send')
+
+empty_folder('image_send')
+
+
+# Wait for GPIO trigger
+print(f"Waiting for GPIO trigger on pin {trigger_pin}...")
+gpio.wait_for_edge(trigger_pin, gpio.RISING)
+print("Trigger detected, starting video capture pipeline...")
+
 # Start motor rotation in a separate thread
 motor_thread = threading.Thread(target=turn_stepper_motor)
 motor_thread.start()
@@ -102,10 +117,6 @@ video_path = f"testvideo{now}.mp4"
 cap = cv2.VideoCapture(video_path)
 total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-if not os.path.exists('image_send'):
-    os.makedirs('image_send')
-
-empty_folder('image_send')
 
 for i in range(50):
     frame_num = int(i * total_frames / 50)
