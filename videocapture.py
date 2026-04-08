@@ -33,13 +33,15 @@ IND = 23  # Coil B negative
 
 control_pins = [INA, INB, INC, IND]
 
+# Define trigger pin
+trigger_pin = 24
+
 # Set up all pins as outputs
 for pin in control_pins:
     gpio.setup(pin, gpio.OUT)
     gpio.output(pin, 0)
 
-# Define GPIO pin for trigger input
-trigger_pin = 18
+# Set up trigger pin as input
 gpio.setup(trigger_pin, gpio.IN, pull_up_down=gpio.PUD_DOWN)
 
 def turn_stepper_motor(steps=2048*4, delay=0.005):
@@ -79,7 +81,7 @@ def turn_stepper_motor(steps=2048*4, delay=0.005):
     print("Motor rotation complete!")
 
 camera = Picamera2()
-camera.resolution = (1024, 768)
+camera.resolution = (4608, 2592)
 
 camera.start(show_preview=True)
 camera.set_controls({"AfMode": controls.AfModeEnum.Continuous})
