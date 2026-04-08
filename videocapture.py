@@ -44,17 +44,21 @@ gpio.setup(trigger_pin, gpio.IN, pull_up_down=gpio.PUD_DOWN)
 
 def turn_stepper_motor(steps=2048*4, delay=0.005):
     
-    # Full-step sequence for bipolar stepper motor
+    # Half-step sequence for smoother operation on Osepp STEPD-01 bipolar stepper motor
     step_sequence = [
-        [1, 0, 1, 0],  # Step 0
-        [0, 1, 1, 0],  # Step 1
-        [0, 1, 0, 1],  # Step 2
-        [1, 0, 0, 1],  # Step 3
+        [1, 0, 0, 0],  # Step 0: Coil A
+        [1, 0, 1, 0],  # Step 1: Coil A and B
+        [0, 0, 1, 0],  # Step 2: Coil B
+        [0, 1, 1, 0],  # Step 3: Coil B and -A
+        [0, 1, 0, 0],  # Step 4: Coil -A
+        [0, 1, 0, 1],  # Step 5: Coil -A and -B
+        [0, 0, 0, 1],  # Step 6: Coil -B
+        [1, 0, 0, 1],  # Step 7: Coil -B and A
     ]
     
     step_count = len(step_sequence)
     
-    print(f"Starting one full turn of stepper motor ({steps} steps)...")
+    print(f"Starting stepper motor rotation with half-stepping ({steps} steps)...")
     
     # Execute the step sequence
     for step_num in range(steps):
@@ -82,48 +86,46 @@ camera.set_controls({"AfMode": controls.AfModeEnum.Continuous})
 success = camera.autofocus_cycle()
 job = camera.autofocus_cycle(wait=False)
 
-now = datetime.datetime.now().strftime("%Y-%m-%d_%Hh%Mm")
-
 if not os.path.exists('image_send'):
     os.makedirs('image_send')
 
-empty_folder('image_send')
+while True:
+    now = datetime.datetime.now().strftime("%Y-%m-%d_%Hh%Mm")
 
+    empty_folder('image_send')
 
-# Wait for GPIO trigger
-print(f"Waiting for GPIO trigger on pin {trigger_pin}...")
-gpio.wait_for_edge(trigger_pin, gpio.RISING)
-print("Trigger detected, starting video capture pipeline...")
+    # Wait for GPIO trigger
+    print(f"Waiting for GPIO trigger on pin {trigger_pin}...")
+    gpio.wait_for_edge(trigger_pin, gpio.RISING)
+    print("Trigger detected, starting video capture pipeline...")
 
-# Start motor rotation in a separate thread
-motor_thread = threading.Thread(target=turn_stepper_motor)
-motor_thread.start()
+    # Start motor rotation in a separate thread
+    motor_thread = threading.Thread(target=turn_stepper_motor)
+    motor_thread.start()
 
-# Start video recording
-success = camera.wait(job)
-camera.start_and_record_video(f"testvideo{now}.mp4", duration=30)
+    # Start video recording
+    success = camera.wait(job)
+    camera.start_and_record_video(f"testvideo{now}.mp4", duration=30)
 
-# Wait for motor to finish
-motor_thread.join()
+    # Wait for motor to finish
+    motor_thread.join()
 
-sleep(2)
-camera.close()
+    sleep(2)
 
-# Clean up GPIO pins
+    # Extract frames from the video
+    video_path = f"testvideo{now}.mp4"
+    cap = cv2.VideoCapture(video_path)
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+    for i in range(50):
+        frame_num = int(i * total_frames / 50)
+        cap.set(cv2.CAP_PROP_POS_FRAMES, frame_num)
+        ret, frame = cap.read()
+        if ret:
+            cv2.imwrite(f'image_send/frame_{i:02d}.jpg', frame)
+
+    cap.release()
+    print("Frame extraction complete!")
+
+# Clean up GPIO pins (unreachable in continuous mode)
 gpio.cleanup()
-
-# Extract frames from the video
-video_path = f"testvideo{now}.mp4"
-cap = cv2.VideoCapture(video_path)
-total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-
-
-for i in range(50):
-    frame_num = int(i * total_frames / 50)
-    cap.set(cv2.CAP_PROP_POS_FRAMES, frame_num)
-    ret, frame = cap.read()
-    if ret:
-        cv2.imwrite(f'image_send/frame_{i:02d}.jpg', frame)
-
-cap.release()
-print("Frame extraction complete!")
