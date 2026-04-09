@@ -46,21 +46,17 @@ gpio.setup(trigger_pin, gpio.IN, pull_up_down=gpio.PUD_DOWN)
 
 def turn_stepper_motor(steps=2048*4, delay=0.005):
     
-    # Half-step sequence for smoother operation on Osepp STEPD-01 bipolar stepper motor
+    # Full-step sequence for bipolar stepper motor
     step_sequence = [
-        [1, 0, 0, 0],  # Step 0: Coil A
-        [1, 0, 1, 0],  # Step 1: Coil A and B
-        [0, 0, 1, 0],  # Step 2: Coil B
-        [0, 1, 1, 0],  # Step 3: Coil B and -A
-        [0, 1, 0, 0],  # Step 4: Coil -A
-        [0, 1, 0, 1],  # Step 5: Coil -A and -B
-        [0, 0, 0, 1],  # Step 6: Coil -B
-        [1, 0, 0, 1],  # Step 7: Coil -B and A
+        [1, 0, 1, 0],  # Step 0: Coil A and B
+        [0, 1, 1, 0],  # Step 1: Coil B and -A
+        [0, 1, 0, 1],  # Step 2: Coil -A and -B
+        [1, 0, 0, 1],  # Step 3: Coil -B and A
     ]
     
     step_count = len(step_sequence)
     
-    print(f"Starting stepper motor rotation with half-stepping ({steps} steps)...")
+    print(f"Starting stepper motor rotation with full-stepping ({steps} steps)...")
     
     # Execute the step sequence
     for step_num in range(steps):
